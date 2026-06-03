@@ -22,7 +22,7 @@ The model has been optimized on three prominent open-source breast ultrasound da
 
 ---
 
-## ⚡ Key Features
+##  Key Features
 
 - **Ingestion & Diagnostics**: Drag and drop breast ultrasound scans (PNG, JPG, JPEG) to run segmentation.
 - **Interactive Visualizer**: Toggle between **Overlay view**, side-by-side **Comparison view**, or the raw **Binary Mask**.
@@ -34,7 +34,7 @@ The model has been optimized on three prominent open-source breast ultrasound da
 
 ---
 
-## 🛠️ Installation & Getting Started
+## Installation & Getting Started
 
 ### 1. Prerequisites
 Ensure you have **Python 3.8+** installed. A GPU with CUDA support is recommended but not required.
@@ -66,40 +66,3 @@ Open your browser and navigate to:
 
 ---
 
-## 🚀 Pushing to GitHub
-
-To upload this project to your own GitHub repository, follow these steps:
-
-### 1. Initialize Git Locally
-If git is not already initialized, run the following commands in the project directory:
-```bash
-# Initialize local repo
-git init
-
-# Add files to staging (excluding the large .pth file ignored in .gitignore)
-git add .
-
-# Create initial commit
-git commit -m "Initial commit: OncoVision Web UI and Model Architecture"
-```
-
-### 2. Create the GitHub Repository
-1. Go to [github.com](https://github.com/) and log in.
-2. Click the **New** button to create a new repository.
-3. Set the Repository Name (e.g., `oncovision-breast-cancer-ui`).
-4. Keep the repository public or private, and do **NOT** check "Add a README", "Add .gitignore", or "Choose a license" (since we have already created these).
-5. Click **Create repository**.
-
-### 3. Link and Push
-Copy the commands from the GitHub repository setup page under *"…or push an existing repository from the command line"*:
-```bash
-# Link the remote repository (Replace with your actual GitHub URL)
-git remote add origin https://github.com/YOUR_USERNAME/oncovision-breast-cancer-ui.git
-
-# Set default branch to main
-git branch -M main
-
-# Push files to GitHub
-git push -u origin main
-```
-Your code and UI will now be available on your GitHub profile!
