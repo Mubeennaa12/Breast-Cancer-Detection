@@ -123,6 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Drag and Drop files
+    fileInput.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
+
     dropZone.addEventListener("click", () => {
         fileInput.click();
     });
