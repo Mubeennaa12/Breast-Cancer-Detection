@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breast Cancer Detection & Segmentation Dashboard</title>
+    <!-- Google Fonts: Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for medical icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-microscope medical-logo"></i>
+                <div class="brand-info">
+                    <h2>OncoVision</h2>
+                    <span>AI Diagnostics</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Analysis Mode</div>
+                <a href="#" class="nav-item active"><i class="fa-solid fa-lungs"></i> Breast Scan Seg</a>
+                
+                <div class="nav-section-title">Model Architecture</div>
+                <div class="model-badge-container">
+                    <span class="badge">Multi-Level Fusion</span>
+                    <span class="badge">MiT-B3 Backbone</span>
+                    <span class="badge">Stage Enhancers</span>
+                </div>
+                <div class="sidebar-desc">
+                    The model extracts multi-level feature representations from a MixVisionTransformer (MiT-B3) encoder, enhances them using dilated DSC blocks, and fuses them top-down to construct high-fidelity tumor segmentations.
+                </div>
+                
+                <div class="nav-section-title">Datasets Trained On</div>
+                <ul class="dataset-list">
+                    <li><a href="https://www.kaggle.com/datasets/srivarshachivukula/busi-combined" target="_blank"><i class="fa-solid fa-database"></i> BUSI (Combined)</a></li>
+                    <li><a href="https://www.kaggle.com/datasets/orvile/bus-bra-a-breast-ultrasound-dataset" target="_blank"><i class="fa-solid fa-database"></i> BUS-BRA Dataset</a></li>
+                    <li><a href="https://www.kaggle.com/datasets/hudson777/breast-dataset" target="_blank"><i class="fa-solid fa-database"></i> Breast Dataset</a></li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="pulse-dot green"></span>
+                    <span id="api-status">API: Loading...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-titles">
+                    <h1>Breast Cancer Detection Dashboard</h1>
+                    <p>Upload a breast ultrasound or CT scan to run deep learning semantic segmentation.</p>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="circle-btn" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Left Panel: Input & Controls -->
+                <div class="panel upload-panel">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-cloud-arrow-up"></i> Scan Ingestion</h3>
+                    </div>
+                    
+                    <!-- Drag & Drop Zone -->
+                    <div class="drag-zone" id="drop-zone">
+                        <input type="file" id="file-input" accept="image/*" class="file-hidden-input">
+                        <div class="drag-zone-content">
+                            <i class="fa-solid fa-file-medical drag-icon"></i>
+                            <h4>Drag & drop scan here</h4>
+                            <p>or <span>browse files</span> from computer</p>
+                            <span class="file-info-limit">Supports PNG, JPG, JPEG</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Pre-inference Configuration -->
+                    <div class="controls-section">
+                        <h4>Visualization Settings</h4>
+                        
+                        <div class="control-group">
+                            <label for="overlay-color">Overlay Tint Color:</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="overlay-color" value="#f43f5e">
+                                <span class="color-hex-val">#f43f5e</span>
+                                <div class="predefined-colors">
+                                    <button class="color-dot active" style="background-color: #f43f5e;" data-color="#f43f5e" title="Rose Red"></button>
+                                    <button class="color-dot" style="background-color: #06b6d4;" data-color="#06b6d4" title="Cyan Blue"></button>
+                                    <button class="color-dot" style="background-color: #10b981;" data-color="#10b981" title="Emerald Green"></button>
+                                    <button class="color-dot" style="background-color: #eab308;" data-color="#eab308" title="Neon Yellow"></button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="slider-header">
+                                <label for="overlay-opacity">Overlay Opacity:</label>
+                                <span id="opacity-val">40%</span>
+                            </div>
+                            <input type="range" id="overlay-opacity" min="0" max="255" value="102" class="slider">
+                        </div>
+                        
+                        <button id="analyze-btn" class="primary-btn" disabled>
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Execute Segmentation
+                        </button>
+                    </div>
+
+                    <!-- Sample Scans Selection -->
+                    <div class="samples-section">
+                        <h4>Demo Sample Scans</h4>
+                        <div class="samples-grid">
+                            <div class="sample-card" data-sample="sample1.png">
+                                <div class="sample-thumb-wrapper">
+                                    <img src="samples/sample1.png" alt="Sample 1" onerror="this.src='https://placehold.co/120x90/1e293b/06b6d4?text=Scan+A'">
+                                </div>
+                                <span class="sample-tag tumor">Tumor Demo</span>
+                            </div>
+                            <div class="sample-card" data-sample="sample2.png">
+                                <div class="sample-thumb-wrapper">
+                                    <img src="samples/sample2.png" alt="Sample 2" onerror="this.src='https://placehold.co/120x90/1e293b/06b6d4?text=Scan+B'">
+                                </div>
+                                <span class="sample-tag normal">Normal Demo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Visualizer & Metrics -->
+                <div class="panel result-panel">
+                    <div class="panel-header">
+                        <h3><i class="fa-solid fa-chart-line"></i> Diagnostic Visualizer</h3>
+                        <div class="tabs" id="visualizer-tabs">
+                            <button class="tab-btn active" data-tab="overlay">Overlay</button>
+                            <button class="tab-btn" data-tab="comparison">Compare</button>
+                            <button class="tab-btn" data-tab="mask">Mask Only</button>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-container">
+                        <!-- Default state -->
+                        <div class="empty-state" id="empty-state">
+                            <i class="fa-solid fa-heart-pulse pulse-icon"></i>
+                            <h3>Awaiting Scan Input</h3>
+                            <p>Upload a breast ultrasound or select one of the demo scans from the left panel to execute cancer detection and view segmentation boundaries.</p>
+                        </div>
+
+                        <!-- Processing State -->
+                        <div class="loading-state hidden" id="loading-state">
+                            <div class="spinner">
+                                <div class="double-bounce1"></div>
+                                <div class="double-bounce2"></div>
+                            </div>
+                            <h3>Analyzing Mammography Scan</h3>
+                            <p id="loading-text">Ingesting scan and resizing to 256x256...</p>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+
+                        <!-- Output display -->
+                        <div class="output-display hidden" id="output-display">
+                            <!-- TAB: Overlay -->
+                            <div class="tab-content" id="tab-overlay">
+                                <div class="image-viewer-wrapper">
+                                    <img id="img-original-base" src="" alt="Original Scan" class="viewer-img">
+                                    <img id="img-overlay-layer" src="" alt="Overlay Layer" class="viewer-img overlay-layer">
+                                </div>
+                            </div>
+
+                            <!-- TAB: Comparison -->
+                            <div class="tab-content hidden" id="tab-comparison">
+                                <div class="comparison-grid">
+                                    <div class="comp-box">
+                                        <h5>Original Ultrasound</h5>
+                                        <img id="img-comp-orig" src="" alt="Original" class="viewer-img">
+                                    </div>
+                                    <div class="comp-box">
+                                        <h5>Target Segment</h5>
+                                        <img id="img-comp-overlay" src="" alt="Overlayed" class="viewer-img">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TAB: Mask -->
+                            <div class="tab-content hidden" id="tab-mask">
+                                <div class="mask-viewer-wrapper">
+                                    <img id="img-mask-only" src="" alt="Binary Mask" class="viewer-img mask-img">
+                                </div>
+                            </div>
+                            
+                            <div class="viewer-footer">
+                                <button id="download-overlay-btn" class="secondary-btn"><i class="fa-solid fa-download"></i> Save Image</button>
+                                <button id="download-mask-btn" class="secondary-btn"><i class="fa-solid fa-file-image"></i> Save Mask</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Dashboard -->
+                    <div class="metrics-dashboard hidden" id="metrics-dashboard">
+                        <div class="metric-card" id="detection-card">
+                            <div class="metric-icon-box">
+                                <i class="fa-solid fa-triangle-exclamation" id="detection-icon"></i>
+                            </div>
+                            <div class="metric-info">
+                                <h5>Diagnosis Status</h5>
+                                <h3 id="detection-status">DETECTED</h3>
+                                <p id="detection-desc">Abnormal tumor tissue segmented.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon-box cyan-bg">
+                                <i class="fa-solid fa-chart-pie"></i>
+                            </div>
+                            <div class="metric-info">
+                                <h5>Tumor Area Ratio</h5>
+                                <h3 id="ratio-value">12.4%</h3>
+                                <p>Of total scanned area</p>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon-box purple-bg">
+                                <i class="fa-solid fa-expand"></i>
+                            </div>
+                            <div class="metric-info">
+                                <h5>Segment Area</h5>
+                                <h3 id="pixels-value">45,123 px</h3>
+                                <p>At input resolution</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
